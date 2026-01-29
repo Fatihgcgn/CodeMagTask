@@ -39,7 +39,7 @@ namespace WinForm
 
         private void workOrdersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            OpenChild(new WorkOrderPage());
         }
 
         private void Form1_Load(object sender, EventArgs e)

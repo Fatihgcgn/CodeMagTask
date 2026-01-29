@@ -5,27 +5,50 @@ using System.Text.Json;
 public sealed class ApiClient
 {
     private readonly HttpClient _http;
-    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
     public ApiClient(string baseUrl)
     {
-        _http = new HttpClient { BaseAddress = new Uri(baseUrl) };
+        var handler = new HttpClientHandler();
+
+        _http = new HttpClient(handler)
+        {
+            BaseAddress = new Uri(baseUrl)
+        };
+    }
+
+    private static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    public async Task<TResponse> PostAsync<TResponse>(string url, object body, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(body, JsonOpts);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        using var resp = await _http.PostAsync(url, content, ct);
+
+        var respText = await resp.Content.ReadAsStringAsync(ct);
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            throw new Exception($"HTTP {(int)resp.StatusCode} {resp.ReasonPhrase}\n{respText}");
+        }
+
+        if (string.IsNullOrWhiteSpace(respText))
+            return default!;
+
+        return JsonSerializer.Deserialize<TResponse>(respText, JsonOpts)!;
     }
 
     public async Task<T> GetAsync<T>(string url, CancellationToken ct = default)
     {
-        var res = await _http.GetAsync(url, ct);
-        var body = await res.Content.ReadAsStringAsync(ct);
-        if (!res.IsSuccessStatusCode) throw new Exception($"{(int)res.StatusCode}: {body}");
-        return JsonSerializer.Deserialize<T>(body, _json)!;
-    }
+        using var resp = await _http.GetAsync(url, ct);
+        var text = await resp.Content.ReadAsStringAsync(ct);
 
-    public async Task<TResponse> PostAsync<TResponse>(string url, object request, CancellationToken ct = default)
-    {
-        var json = JsonSerializer.Serialize(request, _json);
-        var res = await _http.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"), ct);
-        var body = await res.Content.ReadAsStringAsync(ct);
-        if (!res.IsSuccessStatusCode) throw new Exception($"{(int)res.StatusCode}: {body}");
-        return JsonSerializer.Deserialize<TResponse>(body, _json)!;
+        if (!resp.IsSuccessStatusCode)
+            throw new Exception($"HTTP {(int)resp.StatusCode} {resp.ReasonPhrase}\n{text}");
+
+        return JsonSerializer.Deserialize<T>(text, JsonOpts)!;
     }
 }
