@@ -159,18 +159,27 @@ public class WorkOrdersController : ControllerBase
 
     // Create Logistic Unit (Package/Pallet)
     [HttpPost("{id:guid}/logistic-units")]
-    public async Task<IActionResult> CreateLogisticUnit(Guid id, [FromBody] CreateLogisticUnitRequest req,
-        [FromServices] LogisticUnitService service)
+    public async Task<IActionResult> CreateLogisticUnits(
+        Guid id,
+        [FromServices] LogisticUnitService service,
+        [FromQuery] LogisticUnitType type = LogisticUnitType.Package,
+        [FromQuery] int count = 1,
+        CancellationToken ct = default)
     {
-        var lu = await service.CreateAsync(id, req.Type);
+        var units = await service.CreateManyAsync(id, type, count, ct);
 
         return Ok(new
         {
-            lu.Id,
-            lu.WorkOrderId,
-            lu.Type,
-            lu.SSCC,
-            lu.CreatedAt
+            WorkOrderId = id,
+            GeneratedCount = units.Count,
+            LogisticUnits = units.Select(u => new
+            {
+                u.Id,
+                u.WorkOrderId,
+                u.Type,
+                u.SSCC,
+                u.CreatedAt
+            })
         });
     }
 

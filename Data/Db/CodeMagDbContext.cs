@@ -9,6 +9,7 @@ public class CodeMagDbContext : DbContext
 {
     public CodeMagDbContext(DbContextOptions<CodeMagDbContext> options) : base(options) { }
 
+    public DbSet<NextValueResult> NextValueResults => Set<NextValueResult>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
