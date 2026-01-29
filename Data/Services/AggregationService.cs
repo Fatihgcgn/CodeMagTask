@@ -1,7 +1,9 @@
-﻿using Data.Db;
+﻿using Application.Exceptions; // namespace’ini nereye koyduysan ona göre düzelt
+using Data.Db;
 using Data.Entity;
 using Data.Enum;
 using Microsoft.EntityFrameworkCore;
+using static Application.Exceptions.DomainExceptions;
 
 namespace Data.Services;
 
@@ -10,21 +12,29 @@ public sealed class AggregationService
     private readonly CodeMagDbContext _db;
     public AggregationService(CodeMagDbContext db) => _db = db;
 
+    // Parent = Package, Child = Serial
     public async Task<AggregationLink> AddSerialAsync(Guid parentLuId, Guid serialId, CancellationToken ct = default)
     {
-        // Parent var mı?
-        _ = await _db.LogisticUnits.SingleAsync(x => x.Id == parentLuId, ct);
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
-        // Serial var mı?
-        _ = await _db.Serials.SingleAsync(x => x.Id == serialId, ct);
+        var parent = await _db.LogisticUnits.SingleOrDefaultAsync(x => x.Id == parentLuId, ct);
+        if (parent == null) throw new NotFoundException($"Parent logistic unit not found: {parentLuId}");
 
-        // Aynı parent-child zaten var mı?
-        var exists = await _db.AggregationLinks.AnyAsync(x =>
-            x.ParentLogisticUnitId == parentLuId &&
-            x.ChildSerialId == serialId, ct);
+        if (parent.Type != LogisticUnitType.Package)
+            throw new ValidationException($"Parent must be Package to add Serial. ParentType={parent.Type}");
 
-        if (exists)
-            throw new InvalidOperationException("This serial is already aggregated under the parent logistic unit.");
+        var serial = await _db.Serials.SingleOrDefaultAsync(x => x.Id == serialId, ct);
+        if (serial == null) throw new NotFoundException($"Serial not found: {serialId}");
+
+        // Opsiyonel: aynı workorder mı?
+        if (serial.WorkOrderId != parent.WorkOrderId)
+            throw new ValidationException("Serial and Package must belong to same WorkOrder.");
+
+        // Serial zaten bir yere bağlı mı? (childSerial unique index'in varsa DB de korur ama service de kontrol edelim)
+        var alreadyLinked = await _db.AggregationLinks
+            .AnyAsync(x => x.ChildSerialId == serialId, ct);
+        if (alreadyLinked)
+            throw new ConflictException($"Serial already aggregated: {serialId}");
 
         var link = new AggregationLink
         {
@@ -41,37 +51,48 @@ public sealed class AggregationService
         try
         {
             await _db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+            return link;
         }
         catch (DbUpdateException)
         {
-            // Unique index aynı anda 2 istek gelirse patlayabilir → burada düzgün hata dön
-            throw new InvalidOperationException("Aggregation already exists (concurrent request).");
+            // Unique index çakışmaları vb.
+            throw new ConflictException("Aggregation already exists or violates uniqueness constraints.");
         }
-
-        return link;
     }
 
-    public async Task<AggregationLink> AddChildUnitAsync(Guid parentLuId, Guid childLuId, CancellationToken ct = default)
+    // Parent = Pallet, Child = Package
+    public async Task<AggregationLink> AddPackageToPalletAsync(Guid palletId, Guid packageId, CancellationToken ct = default)
     {
-        if (parentLuId == childLuId)
-            throw new InvalidOperationException("A logistic unit cannot be aggregated into itself.");
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
-        _ = await _db.LogisticUnits.SingleAsync(x => x.Id == parentLuId, ct);
-        _ = await _db.LogisticUnits.SingleAsync(x => x.Id == childLuId, ct);
+        var pallet = await _db.LogisticUnits.SingleOrDefaultAsync(x => x.Id == palletId, ct);
+        if (pallet == null) throw new NotFoundException($"Pallet not found: {palletId}");
 
-        var exists = await _db.AggregationLinks.AnyAsync(x =>
-            x.ParentLogisticUnitId == parentLuId &&
-            x.ChildLogisticUnitId == childLuId, ct);
+        if (pallet.Type != LogisticUnitType.Pallet)
+            throw new ValidationException($"Parent must be Pallet to add Package. ParentType={pallet.Type}");
 
-        if (exists)
-            throw new InvalidOperationException("This logistic unit is already aggregated under the parent logistic unit.");
+        var package = await _db.LogisticUnits.SingleOrDefaultAsync(x => x.Id == packageId, ct);
+        if (package == null) throw new NotFoundException($"Package not found: {packageId}");
+
+        if (package.Type != LogisticUnitType.Package)
+            throw new ValidationException($"Child must be Package. ChildType={package.Type}");
+
+        if (package.WorkOrderId != pallet.WorkOrderId)
+            throw new ValidationException("Package and Pallet must belong to same WorkOrder.");
+
+        // Package zaten bir palete bağlı mı?
+        var alreadyLinked = await _db.AggregationLinks
+            .AnyAsync(x => x.ChildLogisticUnitId == packageId, ct);
+        if (alreadyLinked)
+            throw new ConflictException($"Package already aggregated: {packageId}");
 
         var link = new AggregationLink
         {
             Id = Guid.NewGuid(),
-            ParentLogisticUnitId = parentLuId,
+            ParentLogisticUnitId = palletId,
             ChildType = AggregationChildType.LogisticUnit,
-            ChildLogisticUnitId = childLuId,
+            ChildLogisticUnitId = packageId,
             ChildSerialId = null,
             CreatedAt = DateTime.UtcNow
         };
@@ -81,12 +102,12 @@ public sealed class AggregationService
         try
         {
             await _db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+            return link;
         }
         catch (DbUpdateException)
         {
-            throw new InvalidOperationException("Aggregation already exists (concurrent request).");
+            throw new ConflictException("Aggregation already exists or violates uniqueness constraints.");
         }
-
-        return link;
     }
 }

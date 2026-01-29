@@ -7,16 +7,14 @@ namespace WebApi.Controllers;
 [Route("api/logistic-units")]
 public class AggregationController : ControllerBase
 {
-    // POST /api/logistic-units/{parentId}/aggregate/serial/{serialId}
     [HttpPost("{parentId:guid}/aggregate/serial/{serialId:guid}")]
     public async Task<IActionResult> AggregateSerial(
         Guid parentId,
         Guid serialId,
         [FromServices] AggregationService service,
-        CancellationToken ct = default)
+        CancellationToken ct)
     {
         var link = await service.AddSerialAsync(parentId, serialId, ct);
-
         return Ok(new
         {
             link.Id,
@@ -27,16 +25,14 @@ public class AggregationController : ControllerBase
         });
     }
 
-    // POST /api/logistic-units/{parentId}/aggregate/unit/{childLuId}
-    [HttpPost("{parentId:guid}/aggregate/unit/{childLuId:guid}")]
-    public async Task<IActionResult> AggregateUnit(
-        Guid parentId,
-        Guid childLuId,
+    [HttpPost("{palletId:guid}/aggregate/package/{packageId:guid}")]
+    public async Task<IActionResult> AggregatePackage(
+        Guid palletId,
+        Guid packageId,
         [FromServices] AggregationService service,
-        CancellationToken ct = default)
+        CancellationToken ct)
     {
-        var link = await service.AddChildUnitAsync(parentId, childLuId, ct);
-
+        var link = await service.AddPackageToPalletAsync(palletId, packageId, ct);
         return Ok(new
         {
             link.Id,
@@ -46,4 +42,6 @@ public class AggregationController : ControllerBase
             link.CreatedAt
         });
     }
+
+
 }

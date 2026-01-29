@@ -5,6 +5,7 @@ using Data.Enum;
 using Data.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Dto;
 using WebApi.Dtos;
 
 namespace WebApi.Controllers;
@@ -21,6 +22,30 @@ public class WorkOrdersController : ControllerBase
     }
 
     // ---------------------------
+
+    [HttpGet]
+    public async Task<ActionResult<List<WorkOrderListItemDto>>> GetAll(
+        [FromServices] CodeMagDbContext db,
+        CancellationToken ct)
+    {
+        var list = await db.WorkOrders
+            .AsNoTracking()
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => new WorkOrderListItemDto
+            {
+                Id = x.Id,
+                GTIN = x.Product.GTIN,
+                BatchNo = x.BatchNo,
+                ExpiryDate = x.ExpiryDate,
+                Quantity = x.Quantity,
+                ProducedCount = db.Serials.Count(s => s.WorkOrderId == x.Id),
+                Status = (int)x.Status,
+                CreatedAt = x.CreatedAt
+            })
+            .ToListAsync(ct);
+
+        return Ok(list);
+    }
 
     // CREATE: Product'a bağlı WorkOrder
     [HttpPost("/api/products/{productId:guid}/workorders")]
@@ -241,6 +266,100 @@ public class WorkOrdersController : ControllerBase
                 s.CreatedAt
             })
         });
+    }
+
+    [HttpGet("{id:guid}/snapshot")]
+    public async Task<ActionResult<WorkOrderSnapshotDto>> Snapshot(
+        Guid id,
+        [FromServices] CodeMagDbContext db,
+        CancellationToken ct)
+    {
+        // 1) WorkOrder + Product
+        var wo = await db.WorkOrders
+            .AsNoTracking()
+            .Include(x => x.Product)
+            .SingleOrDefaultAsync(x => x.Id == id, ct);
+
+        if (wo == null) return NotFound(new { Message = $"WorkOrder not found: {id}" });
+
+        // 2) Serials
+        var serials = await db.Serials
+            .AsNoTracking()
+            .Where(s => s.WorkOrderId == id)
+            .OrderBy(s => s.CreatedAt)
+            .Select(s => new SerialDto
+            {
+                Id = s.Id,
+                WorkOrderId = s.WorkOrderId,
+                GTIN = s.GTIN,
+                SerialNo = s.SerialNo,
+                BatchNo = s.BatchNo,
+                ExpiryDate = s.ExpiryDate,
+                Gs1String = s.Gs1String,
+                CreatedAt = s.CreatedAt
+            })
+            .ToListAsync(ct);
+
+        // 3) LogisticUnits (SSCC)
+        var lus = await db.LogisticUnits
+            .AsNoTracking()
+            .Where(lu => lu.WorkOrderId == id)
+            .OrderBy(lu => lu.CreatedAt)
+            .Select(lu => new LogisticUnitDto
+            {
+                Id = lu.Id,
+                WorkOrderId = lu.WorkOrderId,
+                SSCC = lu.SSCC,
+                Type = (int)lu.Type,
+                CreatedAt = lu.CreatedAt
+            })
+            .ToListAsync(ct);
+
+        // 4) AggregationLinks (bu workorder’ın LU’ları üzerinden)
+        var luIds = lus.Select(x => x.Id).ToList();
+
+        var links = luIds.Count == 0
+            ? new List<AggregationLinkDto>()
+            : await db.AggregationLinks
+                .AsNoTracking()
+                .Where(x => luIds.Contains(x.ParentLogisticUnitId))
+                .OrderBy(x => x.CreatedAt)
+                .Select(x => new AggregationLinkDto
+                {
+                    Id = x.Id,
+                    ParentLogisticUnitId = x.ParentLogisticUnitId,
+                    ChildType = (int)x.ChildType,
+                    ChildLogisticUnitId = x.ChildLogisticUnitId,
+                    ChildSerialId = x.ChildSerialId,
+                    CreatedAt = x.CreatedAt
+                })
+                .ToListAsync(ct);
+
+        var dto = new WorkOrderSnapshotDto
+        {
+            WorkOrder = new WorkOrderDto
+            {
+                Id = wo.Id,
+                ProductId = wo.ProductId,
+                BatchNo = wo.BatchNo,
+                ExpiryDate = wo.ExpiryDate,
+                Quantity = wo.Quantity,
+                Status = (int)wo.Status,
+                CreatedAt = wo.CreatedAt
+            },
+            Product = new ProductDto
+            {
+                Id = wo.Product.Id,
+                CustomerId = wo.Product.CustomerId,
+                GTIN = wo.Product.GTIN,
+                Name = wo.Product.Name
+            },
+            Serials = serials,
+            LogisticUnits = lus,
+            AggregationLinks = links
+        };
+
+        return Ok(dto);
     }
 
 
