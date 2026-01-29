@@ -2,9 +2,10 @@
 
 public enum WorkOrderStatus
 {
-    Undefined = 0,  
-    Created = 1,   
-    InProduction = 2,
-    Completed = 3,
-    Cancelled = 4
+    Created = 1,        
+    Serializing = 2,    // Serial üretimi başladı
+    Serialized = 3,     // Serial üretimi tamamlandı
+    Aggregating = 4,    // Koli / Paletleme
+    Completed = 5,      // Bitti
+    Cancelled = 9
 }

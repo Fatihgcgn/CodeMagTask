@@ -8,6 +8,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<LogisticUnitService>();
+builder.Services.AddScoped<AggregationService>();
+builder.Services.AddScoped<WorkOrderDetailService>();
+builder.Services.AddScoped<SerialService>();
 
 var cs = builder.Configuration.GetConnectionString("connString");
 if (string.IsNullOrWhiteSpace(cs))
