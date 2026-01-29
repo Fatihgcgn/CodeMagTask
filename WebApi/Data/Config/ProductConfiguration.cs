@@ -20,6 +20,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired()
             .HasMaxLength(200);
 
+        b.Property(x => x.Description)
+        .HasMaxLength(500);
+
         b.HasOne(x => x.Customer)
             .WithMany(c => c.Products)
             .HasForeignKey(x => x.CustomerId)
