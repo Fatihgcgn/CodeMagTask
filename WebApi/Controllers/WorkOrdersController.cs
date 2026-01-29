@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Application.Services;
+using Data.Db;
+using Data.Entity;
+using Data.Enum;
+using Data.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebApi.Data;
 using WebApi.Dtos;
-using WebApi.Entity;
-using WebApi.Enum;      // senin enum klasörün
-using WebApi.Services;
 
 namespace WebApi.Controllers;
 
@@ -18,7 +19,6 @@ public class WorkOrdersController : ControllerBase
     {
         _db = db;
     }
-
 
     // ---------------------------
 
@@ -133,7 +133,7 @@ public class WorkOrdersController : ControllerBase
         wo.Status = req.Status;
 
         await _db.SaveChangesAsync();
-        return NoContent();
+        return Ok();
     }
 
     // DELETE
@@ -183,9 +183,12 @@ public class WorkOrdersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/serials/generate")]
-    public async Task<IActionResult> GenerateSerials(Guid id, [FromServices] SerialService service)
+    public async Task<IActionResult> GenerateSerials(
+    Guid id,
+    [FromServices] SerialService service,
+    CancellationToken ct = default)
     {
-        var serials = await service.GenerateAsync(id);
+        var serials = await service.GenerateAsync(id, 1, ct);
 
         return Ok(new
         {
@@ -202,4 +205,37 @@ public class WorkOrdersController : ControllerBase
             })
         });
     }
+
+
+    [HttpPost("{id:guid}/serials")]
+    public async Task<IActionResult> CreateSerials(
+     Guid id,
+     [FromServices] SerialService service,
+     [FromQuery] int count = 1,
+     CancellationToken ct = default)
+    {
+        var serials = await service.GenerateAsync(id, count, ct);
+
+        return Ok(new
+        {
+            WorkOrderId = id,
+            GeneratedCount = serials.Count,
+            Serials = serials.Select(s => new
+            {
+                s.Id,
+                s.WorkOrderId,
+                s.GTIN,
+                s.SerialNo,
+                s.BatchNo,
+                s.ExpiryDate,
+                s.Gs1String,
+                s.CreatedAt
+            })
+        });
+    }
+
+
 }
+
+
+

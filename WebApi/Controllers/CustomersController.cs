@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Data.Db;
+using Data.Entity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebApi.Data;
 using WebApi.Dto;
-using WebApi.Dtos;
-using WebApi.Entity;
 
 namespace WebApi.Controllers;
 

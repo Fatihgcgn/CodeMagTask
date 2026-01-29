@@ -1,4 +1,6 @@
-﻿using WebApi.Enum;
+﻿using Data.Enum;
+using Data;
+
 
 namespace WebApi.Dtos;
 
