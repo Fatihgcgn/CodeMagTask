@@ -1,59 +1,63 @@
-﻿using Application.Helpers;
+﻿using Application.Abstractions;
+using Application.Helpers;
 using Data.Db;
 using Data.Entity;
 using Data.Enum;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Services;
+namespace Data.Services;
 
-public class LogisticUnitService
+public sealed class LogisticUnitService
 {
     private readonly CodeMagDbContext _db;
+    private readonly INumberSequence _seq;
 
-    // README varsayımı
-    private const string ExtensionDigit = "0";
-    private const string CompanyPrefix = "1234567"; // 7 hane örnek
-
-    public LogisticUnitService(CodeMagDbContext db)
+    public LogisticUnitService(CodeMagDbContext db, INumberSequence seq)
     {
         _db = db;
+        _seq = seq;
     }
 
-    public async Task<LogisticUnit> CreateAsync(Guid workOrderId, LogisticUnitType type)
+    public async Task<List<LogisticUnit>> CreateManyAsync(
+        Guid workOrderId,
+        LogisticUnitType type,
+        int count = 1,
+        CancellationToken ct = default)
     {
-        var woExists = await _db.WorkOrders.AnyAsync(x => x.Id == workOrderId);
-        if (!woExists) throw new KeyNotFoundException("WorkOrder not found.");
+        if (count <= 0) count = 1;
+        if (count > 5000) count = 5000;
 
-        await using var tx = await _db.Database.BeginTransactionAsync();
+        // WorkOrder var mı?
+        _ = await _db.WorkOrders.SingleAsync(x => x.Id == workOrderId, ct);
 
-        var seq = await _db.NumberSequences.FirstOrDefaultAsync(x => x.Key == "SSCC");
-        if (seq == null)
+        var list = new List<LogisticUnit>(count);
+
+        for (int i = 0; i < count; i++)
         {
-            seq = new NumberSequence { Key = "SSCC", NextValue = 1 };
-            _db.NumberSequences.Add(seq);
-            await _db.SaveChangesAsync();
+            var next = await _seq.NextAsync("SSCC", ct);
+
+            // 16 hane serial ref
+            var serialRef16 = next.ToString("D16");
+
+            // extension digit + payload = 17 hane
+            var sscc17 = "0" + serialRef16;
+
+            // check digit ekle = 18 hane
+            var sscc18 = SsccHelper.AppendCheckDigit(sscc17);
+
+            list.Add(new LogisticUnit
+            {
+                Id = Guid.NewGuid(),
+                WorkOrderId = workOrderId,
+                Type = type,          // Package / Pallet / Undefined
+                SSCC = sscc18,
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
-        var serialRef = seq.NextValue.ToString().PadLeft(17 - (ExtensionDigit.Length + CompanyPrefix.Length), '0');
+        _db.LogisticUnits.AddRange(list);
+        await _db.SaveChangesAsync(ct);
 
-        var sscc = SsccGenerator.BuildSscc(ExtensionDigit, CompanyPrefix, serialRef);
-
-        seq.NextValue += 1;
-        await _db.SaveChangesAsync();
-
-        var lu = new LogisticUnit
-        {
-            Id = Guid.NewGuid(),
-            WorkOrderId = workOrderId,
-            Type = type,
-            SSCC = sscc,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _db.LogisticUnits.Add(lu);
-        await _db.SaveChangesAsync();
-
-        await tx.CommitAsync();
-        return lu;
+        return list;
     }
 }

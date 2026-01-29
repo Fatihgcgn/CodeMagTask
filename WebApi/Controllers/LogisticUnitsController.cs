@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Data.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Dto;
 
@@ -24,10 +25,13 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("{palletId:guid}/add-package")]
-        public async Task<IActionResult> AddPackage(Guid palletId, [FromBody] AddPackageToPalletRequest req,
+        public async Task<IActionResult> AddPackage(
+        Guid palletId,
+        [FromBody] AddPackageToPalletRequest req,
         [FromServices] AggregationService service)
         {
-            var link = await service.AddPackageToPalletAsync(palletId, req.PackageId);
+            var link = await service.AddChildUnitAsync(palletId, req.PackageId);
+
             return Ok(new
             {
                 link.Id,
@@ -38,15 +42,6 @@ namespace WebApi.Controllers
             });
         }
 
-
-
-
-
-
-
-
     }
-
-
 
 }

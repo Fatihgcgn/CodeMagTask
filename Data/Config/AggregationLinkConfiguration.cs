@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Data.Entity;
 
 namespace Data.Config;
 
-public class AggregationLinkConfiguration : IEntityTypeConfiguration<AggregationLink>
+public sealed class AggregationLinkConfig : IEntityTypeConfiguration<AggregationLink>
 {
     public void Configure(EntityTypeBuilder<AggregationLink> b)
     {
@@ -12,20 +12,16 @@ public class AggregationLinkConfiguration : IEntityTypeConfiguration<Aggregation
 
         b.HasKey(x => x.Id);
 
-        b.Property(x => x.ChildType)
-            .IsRequired();
-
-        b.Property(x => x.CreatedAt)
-            .IsRequired();
+        b.Property(x => x.ChildType).IsRequired();
+        b.Property(x => x.CreatedAt).IsRequired();
 
         b.HasOne(x => x.ParentLogisticUnit)
-            .WithMany(lu => lu.ParentLinks)
+            .WithMany(x => x.ParentLinks)
             .HasForeignKey(x => x.ParentLogisticUnitId)
-            .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
         b.HasOne(x => x.ChildLogisticUnit)
-            .WithMany(lu => lu.ChildLinks)
+            .WithMany(x => x.ChildLinks)
             .HasForeignKey(x => x.ChildLogisticUnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -34,10 +30,13 @@ public class AggregationLinkConfiguration : IEntityTypeConfiguration<Aggregation
             .HasForeignKey(x => x.ChildSerialId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        b.HasIndex(x => x.ParentLogisticUnitId);
+        // Aynı child aynı parent’a bir kez bağlansın
+        b.HasIndex(x => new { x.ParentLogisticUnitId, x.ChildLogisticUnitId })
+            .IsUnique()
+            .HasFilter("[ChildLogisticUnitId] IS NOT NULL");
 
-        b.HasIndex(x => new { x.ParentLogisticUnitId, x.ChildSerialId }).IsUnique();
-        b.HasIndex(x => new { x.ParentLogisticUnitId, x.ChildLogisticUnitId }).IsUnique();
-
+        b.HasIndex(x => new { x.ParentLogisticUnitId, x.ChildSerialId })
+            .IsUnique()
+            .HasFilter("[ChildSerialId] IS NOT NULL");
     }
 }

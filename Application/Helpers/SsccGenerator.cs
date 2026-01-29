@@ -1,31 +1,25 @@
 ﻿namespace Application.Helpers;
 
-public static class SsccGenerator
+public static class SsccHelper
 {
-    public static int CalculateCheckDigit(string sscc17)
+    // input: 17 hanelik (extension + 16 hane payload) => output: 18 hanelik (check digit eklenmiş)
+    public static string AppendCheckDigit(string sscc17)
     {
-        int sum = 0;
-        bool weightThree = true;
+        if (sscc17.Length != 17 || sscc17.Any(c => c < '0' || c > '9'))
+            throw new ArgumentException("SSCC payload must be 17 digits.", nameof(sscc17));
 
+        // GS1 Mod10 (Luhn benzeri): sağdan sola 3-1 ağırlık
+        int sum = 0;
+        bool weight3 = true; // sağdan ilk digit *3
         for (int i = sscc17.Length - 1; i >= 0; i--)
         {
-            int digit = sscc17[i] - '0';
-            sum += digit * (weightThree ? 3 : 1);
-            weightThree = !weightThree;
+            int d = sscc17[i] - '0';
+            sum += d * (weight3 ? 3 : 1);
+            weight3 = !weight3;
         }
 
         int mod = sum % 10;
-        return mod == 0 ? 0 : 10 - mod;
-    }
-
-    public static string BuildSscc(string extensionDigit, string companyPrefix, string serialRef)
-    {
-        var sscc17 = extensionDigit + companyPrefix + serialRef;
-
-        if (sscc17.Length != 17)
-            throw new ArgumentException("SSCC17 en fazla 17 karakter olabilir lütfen kontrol ediniz !! ");
-
-        int check = CalculateCheckDigit(sscc17);
-        return sscc17 + check;
+        int check = (10 - mod) % 10;
+        return sscc17 + check.ToString();
     }
 }
