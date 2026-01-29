@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WebApi.Data;
-using WebApi.Services;
+﻿using Application.Abstractions;
+using Application.Helpers;
+using Application.Services;
+using Data.Db;
+using Data.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +14,8 @@ builder.Services.AddScoped<LogisticUnitService>();
 builder.Services.AddScoped<AggregationService>();
 builder.Services.AddScoped<WorkOrderDetailService>();
 builder.Services.AddScoped<SerialService>();
+builder.Services.AddScoped<Gs1Builder>();
+builder.Services.AddScoped<INumberSequence, EfNumberSequence>();
 
 var cs = builder.Configuration.GetConnectionString("connString");
 if (string.IsNullOrWhiteSpace(cs))

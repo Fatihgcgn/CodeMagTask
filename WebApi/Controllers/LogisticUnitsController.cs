@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Application.Services;
+using Microsoft.AspNetCore.Mvc;
 using WebApi.Dto;
-using WebApi.Services;
 
 namespace WebApi.Controllers
 {
