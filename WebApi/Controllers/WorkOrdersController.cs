@@ -34,12 +34,15 @@ public class WorkOrdersController : ControllerBase
             .Select(x => new WorkOrderListItemDto
             {
                 Id = x.Id,
+                ProductId = x.Product.Id,
+                ProductName = x.Product.Name,
                 GTIN = x.Product.GTIN,
                 BatchNo = x.BatchNo,
                 ExpiryDate = x.ExpiryDate,
                 Quantity = x.Quantity,
                 ProducedCount = db.Serials.Count(s => s.WorkOrderId == x.Id),
                 Status = (int)x.Status,
+                SerialStart = (int)x.SerialStart,
                 CreatedAt = x.CreatedAt
             })
             .ToListAsync(ct);
