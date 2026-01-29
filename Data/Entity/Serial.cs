@@ -10,7 +10,6 @@
         public string SerialNo { get; set; } = null!;
         public string BatchNo { get; set; } = null!;
         public DateTime ExpiryDate { get; set; }
-
         public string Gs1String { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
 
