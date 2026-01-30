@@ -1,25 +1,27 @@
 # GS1 L3 Serialization & Aggregation – Technical Case
 
-Bu repository, gönderilen **Senior Yazılım Geliştirici Teknik Case** kapsamında
+Bu repository, **Senior Yazılım Geliştirici Teknik Case** kapsamında  
 GS1 standartlarına uygun **Level 3 (L3) serilizasyon ve agregasyon** sürecini
 simüle eden bir uygulamayı içermektedir.
 
-Bu çalışma bir “örnek GS1 anlatımı” değil;  
-**case’te istenen maddeleri gerçekten yapabildiğimi göstermek** amacıyla hazırlanmıştır.
+Bu çalışma, GS1 kavramlarını teorik olarak anlatmayı değil;  
+**case’te istenen maddelerin doğru mimari ve doğru iş akışıyla
+uygulanabildiğini** göstermeyi amaçlar.
 
 ---
 
-## Uygulamanın Kapsamı
+## Projenin Kapsamı
 
 Uygulama aşağıdaki senaryoyu uçtan uca kapsar:
 
-- Müşteri ve müşteri bazlı ürün tanımı
-- Ürün için iş emri oluşturma
+- Müşteri tanımlama ve listeleme
+- Müşteriye bağlı ürün tanımlama (GTIN)
+- Ürün bazlı iş emri (Work Order) oluşturma
 - İş emrine bağlı seri numarası üretimi
 - SSCC üretimi
 - Ürün → Koli → Palet agregasyonu
 - Oluşan yapının API üzerinden tek response olarak sunulması
-- Donanım olmadan otomasyon sürecinin simülasyonu
+- Donanım olmadan otomasyon sürecinin simülasyonu (WinForms)
 
 ---
 
@@ -31,45 +33,57 @@ Solution
 │
 ├── WebApi → REST API katmanı
 ├── Application → İş kuralları ve L3 mantığı
-├── Domain → Entity ve çekirdek modeller
-├── Infrastructure → EF Core / MSSQL
-└── WinForms → Simülasyon ve istemci uygulama
+├── Data → DbContext, Entity’ler, Migration’lar
+└── WinForm → Simülasyon ve istemci uygulama
 
 
-- Controller’lar yalnızca API sorumluluğu taşır
+
+- Controller’lar yalnızca HTTP sorumluluğu taşır
 - Serilizasyon ve agregasyon mantığı Application katmanındadır
-- UI katmanı (WinForms) iş kuralı içermez
-- Yapı, gerçek bir L3 sisteminde servis bazlı ayrıştırmaya uygundur
+- Veritabanı işlemleri Data katmanında yönetilir
+- WinForms uygulaması iş kurallarından ayrıdır
+- Mimari, gerçek L3 sistemlerinde servis bazlı ayrıştırmaya uygundur
+
 
 ---
+
 
 ## Kullanılan Teknolojiler
 
-- .NET (ASP.NET Core Web API)
+
+- .NET 6
+- ASP.NET Core Web API
 - C#
-- MS SQL Server
 - Entity Framework Core
+- Microsoft SQL Server (LocalDB veya normal instance)
 - Windows Forms (.NET)
-- Dependency Injection
+- Serilog (file-based logging)
+
 
 ---
 
-## Case Maddeleri ile Uyum
+
+## Case Gereksinimleri ile Uyum
+
 
 ### Müşteri Yönetimi
 - Müşteri oluşturma
 - Müşteri listeleme
-- GLN bilgisiyle müşteri tanımı
+- GLN bazlı müşteri modeli
+
 
 ---
+
 
 ### Ürün Yönetimi
 - Müşteriye bağlı ürün tanımlama
 - GTIN bazlı ürün yapısı
 
+
 ---
 
-### İş Emri Yönetimi
+
+### İş Emri (Work Order)
 - Ürün bazlı iş emri oluşturma
 - İş emri üzerinde:
   - Üretim adedi
@@ -78,96 +92,170 @@ Solution
   - Seri numarası başlangıç değeri
   - İş emri durumu
 
+
 ---
 
+
 ### GS1 Identifier Üretimi
-İş emrine bağlı olarak aşağıdaki AI’lar otomatik üretilmektedir:
+İş emrine bağlı olarak aşağıdaki GS1 Application Identifier’lar otomatik üretilir:
+
 
 - (01) GTIN
 - (21) Seri Numarası
 - (17) Son Kullanma Tarihi
 - (10) Batch / Lot No
 
-GS1 string çıktısı üretilmekte, fiziksel baskı yapılmamaktadır.
+
+Fiziksel karekod basımı yerine **GS1 string çıktısı** üretilmektedir.
+
 
 ---
+
 
 ### Seri Numarası ve SSCC Yönetimi
 - Seri numaraları çakışmasız üretilir
 - SSCC (00) oluşturulur
 - Aşağıdaki agregasyon yapısı desteklenir:
 
+
+
 Palet (SSCC)
 └── Koli (SSCC)
 └── Ürün Serileri
 
-
-Parent–child ilişkileri sistemde açık şekilde tutulur.
+Agregasyon ilişkileri parent–child mantığıyla tutulur.
 
 ---
 
 ### İş Emri Detay API
-Case’te istenen zorunlu endpoint uygulanmıştır.
+Case’te zorunlu olarak belirtilen endpoint uygulanmıştır.
 
 Bu endpoint tek response içinde:
-- İş emri bilgilerini
-- Ürün bilgilerini
-- Üretilmiş seri numaralarını
-- SSCC ve agregasyon yapısını
+- İş emri bilgileri
+- Ürün bilgileri
+- Üretilmiş seri numaraları
+- SSCC ve agregasyon yapısı
 
 döndürmektedir.
 
 ---
 
-## Otomasyon ve Simülasyon
+## Otomasyon ve Simülasyon (WinForms)
 
-WinForms uygulaması üzerinden:
+WinForms uygulaması, donanım bağımlılığı olmadan otomasyon sürecini simüle eder.
 
-- Auto Generate seçildiğinde
-- Seriler ve SSCC’ler otomatik üretilir
+- Auto Generate seçeneği ile seri ve SSCC üretimi otomatik yapılır
 - Agregasyon yapısı simülasyon olarak oluşturulur
-
-Bu yapı, yazıcı, kamera ve PLC entegrasyonlarının
-donanım olmadan simüle edilmesini sağlar.
+- Yazıcı / kamera / PLC entegrasyonları mock servisler ile temsil edilir
 
 ---
 
-## Logging (WinForms)
+## Logging
 
-WinForms uygulamasında oluşan hatalar ve exception’lar Serilog ile dosyaya kaydedilir.
+### WebApi
+- Domain seviyesinde fırlatılan hatalar HTTP status code’lara map edilir
+- Beklenmeyen hatalar merkezi olarak ele alınır
 
-- UI thread exception’ları `Application.ThreadException` ile yakalanır
-- Unhandled / background exception’lar `AppDomain.CurrentDomain.UnhandledException` ile yakalanır
+### WinForms
+- UI thread exception’ları otomatik loglanır
+- Unhandled / background exception’lar otomatik loglanır
 - API çağrılarında oluşan hatalar ApiClient içerisinde loglanır
 
-Log dosyaları günlük olarak (rolling) aşağıdaki klasöre yazılır:
+Loglar günlük olarak aşağıdaki klasöre yazılır:
+WinForm/Logs/winform-log-YYYY-MM-DD.txt
 
-- `WinForm/Logs/winform-log-YYYY-MM-DD.txt`
+## Kurulum (Setup)
 
+Bu proje **.NET 6** ile geliştirilmiştir ve  
+**Visual Studio 2019 (16.11+) veya Visual Studio 2022** ile açılabilir.
 
-## Teknik Notlar
+Migration işlemleri **manuel olarak çalıştırılmak zorunda değildir**.  
+Uygulama ilk ayağa kalkarken mevcut migration’ları otomatik olarak uygular.
 
-- Katmanlı mimari prensiplerine uyulmuştur
-- Dependency Injection kullanılmıştır
-- Clean Code yaklaşımı benimsenmiştir
-- Veritabanında:
-  - Foreign Key ilişkileri
-  - Unique constraint’ler
-  uygulanmıştır
-- Hata yönetimi ve loglama genişletilebilir yapıdadır
-
----
-
-## Teslim
-
-- Kaynak kod
-- EF Core migration
-- Bu README
+### Gereksinimler
+- .NET 6 SDK
+- Visual Studio 2019 (16.11+) veya Visual Studio 2022
+- Microsoft SQL Server (LocalDB veya normal instance)
 
 ---
 
-## Son Not
+### 1) Projeyi klonlayın
+```bash
+git clone https://github.com/Fatihgcgn/CodeMagTask
 
-Bu proje, GS1’i anlatmaktan çok  
-**GS1 L3 serilizasyon ve agregasyon sürecini doğru şekilde
-modelleyip uygulayabildiğimi** göstermek amacıyla hazırlanmıştır.
+Solution dosyasını Visual Studio ile açın.
+
+2) Connection String ayarlayın
+
+WebApi/appsettings.json dosyasında:
+
+{
+  "ConnectionStrings": {
+    "connString": "Server=.;Database=CodeMagDb;Trusted_Connection=True;TrustServerCertificate=True;"
+  }
+}
+
+3) WebApi’yi çalıştırın
+
+WebApi projesini Startup Project yapın
+
+Uygulamayı çalıştırın (F5)
+
+Uygulama başlarken:
+
+Migration’lar otomatik uygulanır
+
+Veritabanı yoksa oluşturulur
+
+Kısa süreli bağlantı sorunları için retry mekanizması vardır
+
+Swagger ekranının açılması backend’in hazır olduğunu gösterir.
+
+4) WinForms uygulamasını çalıştırın
+
+WinForm projesini çalıştırın
+
+ApiClient içindeki baseUrl değerinin WebApi adresi ile aynı olduğundan emin olun
+(Örn: https://localhost:7267/)
+
+Uygulamayı Test Etme (Önerilen Sıra)
+
+Müşteri oluşturun
+
+Ürün oluşturun
+
+İş emri oluşturun
+
+İş emirleri için Logistic Unit sekmesinden Paket ve Palet tanımlayın. (Paket için 1 tipli,Palet için 2 tipli Unit tanımlaması yapınız)
+
+Simülasyon ekranında Auto Generate’i açın (varsayılan "1" yazın)
+
+Simülasyonu başlatın (otomatik şekilde GS1 standartına uygun serial oluşturucaktır.)
+
+İş emri detay endpoint’ini kontrol edin
+
+Tanımlamaları yaptıktan sonra Agrasyon yapabilirsiniz .
+
+Agrasyon işlemini gerçekleştirmek için Agrasyon sekmesine gidin
+
+İş emrini seçin ve Serial-Package (seri ürün ile paket bağlama işlemi) yapınız.
+
+İş emrini seçin ve Package-Palet (paket ile Palet bağlama işlemi ) yapınız.
+
+Agrasyon işlemleri aynı sekmede Tree olarak gözükmektedir. Aynı şekilde Work Order sekmesinde Detaya tıklarsanız bütün detaylarıyla Snapshot verilerini görebilirsiniz.
+
+WinForms log klasörünü kontrol ederek logging’i doğrulayın
+
+Varsayımlar
+
+API ve WinForms aynı makinede çalıştırılır (localhost)
+
+Otomasyon entegrasyonları simülasyon olarak ele alınmıştır
+
+Logging WinForms tarafında file-based olarak yapılmıştır
+
+Son Not
+
+Bu proje, GS1’i tanımlamaktan ziyade
+GS1 L3 serilizasyon ve agregasyon sürecini doğru şekilde
+modelleyip uygulayabildiğimi göstermek amacıyla hazırlanmıştır.
