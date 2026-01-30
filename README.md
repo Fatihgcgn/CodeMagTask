@@ -132,6 +132,19 @@ donanım olmadan simüle edilmesini sağlar.
 
 ---
 
+## Logging (WinForms)
+
+WinForms uygulamasında oluşan hatalar ve exception’lar Serilog ile dosyaya kaydedilir.
+
+- UI thread exception’ları `Application.ThreadException` ile yakalanır
+- Unhandled / background exception’lar `AppDomain.CurrentDomain.UnhandledException` ile yakalanır
+- API çağrılarında oluşan hatalar ApiClient içerisinde loglanır
+
+Log dosyaları günlük olarak (rolling) aşağıdaki klasöre yazılır:
+
+- `WinForm/Logs/winform-log-YYYY-MM-DD.txt`
+
+
 ## Teknik Notlar
 
 - Katmanlı mimari prensiplerine uyulmuştur
