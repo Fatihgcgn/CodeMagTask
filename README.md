@@ -218,7 +218,9 @@ WinForm projesini çalıştırın
 ApiClient içindeki baseUrl değerinin WebApi adresi ile aynı olduğundan emin olun
 (Örn: https://localhost:7267/)
 
-Uygulamayı Test Etme (Önerilen Sıra)
+
+
+### Uygulamayı Test Etme (Önerilen Sıra)
 
 Müşteri oluşturun
 
@@ -246,7 +248,7 @@ Agrasyon işlemleri aynı sekmede Tree olarak gözükmektedir. Aynı şekilde Wo
 
 WinForms log klasörünü kontrol ederek logging’i doğrulayın
 
-Varsayımlar
+###Varsayımlar
 
 API ve WinForms aynı makinede çalıştırılır (localhost)
 
@@ -254,7 +256,8 @@ Otomasyon entegrasyonları simülasyon olarak ele alınmıştır
 
 Logging WinForms tarafında file-based olarak yapılmıştır
 
-Son Not
+
+###Son Not
 
 Bu proje, GS1’i tanımlamaktan ziyade
 GS1 L3 serilizasyon ve agregasyon sürecini doğru şekilde
