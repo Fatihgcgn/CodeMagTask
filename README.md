@@ -218,7 +218,7 @@ WinForm projesini çalıştırın
 ApiClient içindeki baseUrl değerinin WebApi adresi ile aynı olduğundan emin olun
 (Örn: https://localhost:7267/)
 
-
+---
 
 ### Uygulamayı Test Etme (Önerilen Sıra)
 
