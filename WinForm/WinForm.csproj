@@ -8,4 +8,27 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Include="bin\Debug\net6.0-windows\Logs\winform-log-20260130.txt" />
+    <Content Include="bin\Debug\net6.0-windows\WinForm.deps.json" />
+    <Content Include="bin\Debug\net6.0-windows\WinForm.runtimeconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="bin\Debug\net6.0-windows\Serilog.dll" />
+    <None Include="bin\Debug\net6.0-windows\Serilog.Enrichers.Environment.dll" />
+    <None Include="bin\Debug\net6.0-windows\Serilog.Enrichers.Thread.dll" />
+    <None Include="bin\Debug\net6.0-windows\Serilog.Sinks.File.dll" />
+    <None Include="bin\Debug\net6.0-windows\WinForm.dll" />
+    <None Include="bin\Debug\net6.0-windows\WinForm.exe" />
+    <None Include="bin\Debug\net6.0-windows\WinForm.pdb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
 </Project>
