@@ -18,6 +18,8 @@ public class CodeMagDbContext : DbContext
     public DbSet<AggregationLink> AggregationLinks => Set<AggregationLink>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
+    public DbSet<PrintJobs> PrintJobs => Set<PrintJobs>();
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -4,16 +4,18 @@ using Data.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace WebApi.Migrations
 {
     [DbContext(typeof(CodeMagDbContext))]
-    partial class CodeMagDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260130145311_Add_PrintJobs1")]
+    partial class Add_PrintJobs1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
