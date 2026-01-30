@@ -27,7 +27,35 @@ namespace WinForm.Pages
             InitializeComponent();
         }
 
+        private const string ColProduceName = "colProduce";
         private const string ColDetailName = "colDetail";
+        //private void SetupWorkOrdersGrid()
+        //{
+        //    dgvWorkOrders.AutoGenerateColumns = true;
+        //    dgvWorkOrders.AllowUserToAddRows = false;
+        //    dgvWorkOrders.ReadOnly = true;
+        //    dgvWorkOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        //    dgvWorkOrders.MultiSelect = false;
+
+        //    // Detay butonu daha önce eklendiyse tekrar ekleme
+        //    if (!dgvWorkOrders.Columns.Contains(ColDetailName))
+        //    {
+        //        var btn = new DataGridViewButtonColumn
+        //        {
+        //            Name = ColDetailName,
+        //            HeaderText = "",
+        //            Text = "Detay",
+        //            UseColumnTextForButtonValue = true,
+        //            Width = 70
+        //        };
+
+        //        dgvWorkOrders.Columns.Insert(0, btn);
+        //    }
+
+        //    dgvWorkOrders.CellContentClick -= dgvWorkOrders_CellContentClick;
+        //    dgvWorkOrders.CellContentClick += dgvWorkOrders_CellContentClick;
+        //}
+
         private void SetupWorkOrdersGrid()
         {
             dgvWorkOrders.AutoGenerateColumns = true;
@@ -36,10 +64,24 @@ namespace WinForm.Pages
             dgvWorkOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvWorkOrders.MultiSelect = false;
 
-            // Detay butonu daha önce eklendiyse tekrar ekleme
+            // Üret butonu
+            if (!dgvWorkOrders.Columns.Contains(ColProduceName))
+            {
+                var btnProduce = new DataGridViewButtonColumn
+                {
+                    Name = ColProduceName,
+                    HeaderText = "",
+                    Text = "Üret",
+                    UseColumnTextForButtonValue = true,
+                    Width = 70
+                };
+                dgvWorkOrders.Columns.Insert(0, btnProduce);
+            }
+
+            // Detay butonu
             if (!dgvWorkOrders.Columns.Contains(ColDetailName))
             {
-                var btn = new DataGridViewButtonColumn
+                var btnDetail = new DataGridViewButtonColumn
                 {
                     Name = ColDetailName,
                     HeaderText = "",
@@ -47,8 +89,7 @@ namespace WinForm.Pages
                     UseColumnTextForButtonValue = true,
                     Width = 70
                 };
-
-                dgvWorkOrders.Columns.Insert(0, btn);
+                dgvWorkOrders.Columns.Insert(1, btnDetail);
             }
 
             dgvWorkOrders.CellContentClick -= dgvWorkOrders_CellContentClick;
@@ -154,15 +195,42 @@ namespace WinForm.Pages
             await LoadWorkOrdersAsync();
         }
 
+        //private async void dgvWorkOrders_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        //{
+        //    if (e.RowIndex < 0) return;
+
+        //    // Detay butonu mu?
+        //    if (dgvWorkOrders.Columns[e.ColumnIndex].Name != ColDetailName)
+        //        return;
+
+        //    // Seçili satırın WorkOrderDto'sunu al
+        //    var row = dgvWorkOrders.Rows[e.RowIndex];
+        //    if (row.DataBoundItem is not WorkOrderDto wo)
+        //    {
+        //        MessageBox.Show("Satır verisi okunamadı.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        return;
+        //    }
+
+        //    try
+        //    {
+        //        var snapshot = await _api.GetAsync<WorkOrderSnapshotDto>($"api/workorders/{wo.Id}/snapshot");
+
+        //        using var frm = new WorkOrderSnapshotForm(snapshot);
+        //        frm.ShowDialog(this);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show(ex.Message, "Snapshot Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
+        //}
+
         private async void dgvWorkOrders_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
 
-            // Detay butonu mu?
-            if (dgvWorkOrders.Columns[e.ColumnIndex].Name != ColDetailName)
-                return;
+            var colName = dgvWorkOrders.Columns[e.ColumnIndex].Name;
 
-            // Seçili satırın WorkOrderDto'sunu al
+            // satırdaki WorkOrderDto
             var row = dgvWorkOrders.Rows[e.RowIndex];
             if (row.DataBoundItem is not WorkOrderDto wo)
             {
@@ -170,16 +238,34 @@ namespace WinForm.Pages
                 return;
             }
 
-            try
+            // ÜRET
+            if (colName == ColProduceName)
             {
-                var snapshot = await _api.GetAsync<WorkOrderSnapshotDto>($"api/workorders/{wo.Id}/snapshot");
+                using var frm = new ProduceSerialsForm(_api, wo.Id);
+                var result = frm.ShowDialog(this);
 
-                using var frm = new WorkOrderSnapshotForm(snapshot);
-                frm.ShowDialog(this);
+                if (result == DialogResult.OK)
+                {
+                    // başarılı üretim sonrası listeyi yenile
+                    await LoadWorkOrdersAsync();
+                }
+                return;
             }
-            catch (Exception ex)
+
+            // DETAY
+            if (colName == ColDetailName)
             {
-                MessageBox.Show(ex.Message, "Snapshot Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                try
+                {
+                    var snapshot = await _api.GetAsync<WorkOrderSnapshotDto>($"api/workorders/{wo.Id}/snapshot");
+                    using var frm = new WorkOrderSnapshotForm(snapshot);
+                    frm.ShowDialog(this);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Snapshot Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                return;
             }
         }
 

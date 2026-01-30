@@ -57,8 +57,8 @@
             tableLayoutPanel1.Location = new Point(0, 0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 8.917197F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 91.0828F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.802548F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 92.19745F));
             tableLayoutPanel1.Size = new Size(1362, 628);
             tableLayoutPanel1.TabIndex = 0;
             // 
@@ -75,19 +75,19 @@
             tableLayoutPanel2.Controls.Add(label1, 0, 0);
             tableLayoutPanel2.Controls.Add(dgvSerials, 0, 1);
             tableLayoutPanel2.Dock = DockStyle.Fill;
-            tableLayoutPanel2.Location = new Point(3, 59);
+            tableLayoutPanel2.Location = new Point(3, 52);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 2;
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 7.597173F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 92.4028244F));
-            tableLayoutPanel2.Size = new Size(1356, 566);
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 8.726004F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 91.2739944F));
+            tableLayoutPanel2.Size = new Size(1356, 573);
             tableLayoutPanel2.TabIndex = 0;
             // 
             // dgvLinks
             // 
             dgvLinks.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvLinks.Dock = DockStyle.Fill;
-            dgvLinks.Location = new Point(907, 46);
+            dgvLinks.Location = new Point(907, 53);
             dgvLinks.Name = "dgvLinks";
             dgvLinks.RowTemplate.Height = 25;
             dgvLinks.Size = new Size(446, 517);
@@ -97,7 +97,7 @@
             // 
             dgvLogisticUnits.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvLogisticUnits.Dock = DockStyle.Fill;
-            dgvLogisticUnits.Location = new Point(455, 46);
+            dgvLogisticUnits.Location = new Point(455, 53);
             dgvLogisticUnits.Name = "dgvLogisticUnits";
             dgvLogisticUnits.RowTemplate.Height = 25;
             dgvLogisticUnits.Size = new Size(446, 517);
@@ -108,33 +108,33 @@
             label3.AutoSize = true;
             label3.Location = new Point(907, 0);
             label3.Name = "label3";
-            label3.Size = new Size(65, 15);
+            label3.Size = new Size(266, 45);
             label3.TabIndex = 2;
-            label3.Text = "Aggrations";
+            label3.Text = "Aggrations-(Bağlantı Linkleri) (Serial-Paket-Palet)\r\nChildType = 1 (Paket)\r\nChildType = 2 (Seri)";
             // 
             // label2
             // 
             label2.AutoSize = true;
             label2.Location = new Point(455, 0);
             label2.Name = "label2";
-            label2.Size = new Size(75, 15);
+            label2.Size = new Size(174, 45);
             label2.TabIndex = 1;
-            label2.Text = "LogisticUnits";
+            label2.Text = "LogisticUnits-(Paket ve Paletler)\r\nType = 1 (Paket)\r\nType = 2 (Palet)\r\n";
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Location = new Point(3, 0);
             label1.Name = "label1";
-            label1.Size = new Size(40, 15);
+            label1.Size = new Size(259, 15);
             label1.TabIndex = 0;
-            label1.Text = "Serials";
+            label1.Text = "Serials-(Ürünler) (Agrasyonun en altındaki ürün)\r\n";
             // 
             // dgvSerials
             // 
             dgvSerials.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvSerials.Dock = DockStyle.Fill;
-            dgvSerials.Location = new Point(3, 46);
+            dgvSerials.Location = new Point(3, 53);
             dgvSerials.Name = "dgvSerials";
             dgvSerials.RowTemplate.Height = 25;
             dgvSerials.Size = new Size(446, 517);
@@ -152,14 +152,14 @@
             tableLayoutPanel3.Name = "tableLayoutPanel3";
             tableLayoutPanel3.RowCount = 1;
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel3.Size = new Size(1356, 50);
+            tableLayoutPanel3.Size = new Size(1356, 43);
             tableLayoutPanel3.TabIndex = 1;
             // 
             // lblWorkOrder
             // 
             lblWorkOrder.Anchor = AnchorStyles.Left;
             lblWorkOrder.AutoSize = true;
-            lblWorkOrder.Location = new Point(3, 17);
+            lblWorkOrder.Location = new Point(3, 14);
             lblWorkOrder.Name = "lblWorkOrder";
             lblWorkOrder.Size = new Size(81, 15);
             lblWorkOrder.TabIndex = 0;
@@ -169,7 +169,7 @@
             // 
             lblProduct.Anchor = AnchorStyles.Left;
             lblProduct.AutoSize = true;
-            lblProduct.Location = new Point(761, 17);
+            lblProduct.Location = new Point(761, 14);
             lblProduct.Name = "lblProduct";
             lblProduct.Size = new Size(52, 15);
             lblProduct.TabIndex = 1;

@@ -185,7 +185,6 @@ public class WorkOrdersController : ControllerBase
 
     // ---------------------------
 
-    // Create Logistic Unit (Package/Pallet)
     [HttpPost("{id:guid}/logistic-units")]
     public async Task<IActionResult> CreateLogisticUnits(
         Guid id,
@@ -211,7 +210,6 @@ public class WorkOrdersController : ControllerBase
         });
     }
 
-    // WorkOrder Detail (case zorunlu endpoint)
     [HttpGet("{id:guid}/detail")]
     public async Task<IActionResult> Detail(Guid id, [FromServices] WorkOrderDetailService svc)
     {

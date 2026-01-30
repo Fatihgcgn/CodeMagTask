@@ -28,7 +28,7 @@ namespace WinForm
 
         private void aggregationToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            OpenChild(new AggregationPage());
         }
 
         private void customerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -49,7 +49,7 @@ namespace WinForm
 
         private void logisticUnitsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            OpenChild(new LogisticUnitPage());
         }
 
         private void ShowWelcome()
