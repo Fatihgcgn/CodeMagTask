@@ -173,6 +173,7 @@ Migration işlemleri **manuel olarak çalıştırılmak zorunda değildir**.
 Uygulama ilk ayağa kalkarken mevcut migration’ları otomatik olarak uygular.
 
 ### Gereksinimler
+
 - .NET 6 SDK
 - Visual Studio 2019 (16.11+) veya Visual Studio 2022
 - Microsoft SQL Server (LocalDB veya normal instance)
@@ -217,10 +218,10 @@ WinForm projesini çalıştırın
 
 ApiClient içindeki baseUrl değerinin WebApi adresi ile aynı olduğundan emin olun
 (Örn: https://localhost:7267/)
-
+```
 ---
 
-### Uygulamayı Test Etme (Önerilen Sıra)
+## Uygulamayı Test Etme (Önerilen Sıra)
 
 Müşteri oluşturun
 
