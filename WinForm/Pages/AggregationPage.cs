@@ -603,6 +603,7 @@ namespace WinForm.Pages
                         {
                             s.Id,
                             s.SerialNo,
+                            s.Gs1String,
                             s.GTIN,
                             s.BatchNo,
                             s.ExpiryDate,

@@ -3,6 +3,7 @@ using Application.Helpers;
 using Application.Services;
 using Data.Db;
 using Data.Services;
+using Infrastructure.Printing;
 using Microsoft.EntityFrameworkCore;
 using static Application.Exceptions.DomainExceptions;
 
@@ -17,6 +18,7 @@ builder.Services.AddScoped<WorkOrderDetailService>();
 builder.Services.AddScoped<SerialService>();
 builder.Services.AddScoped<Gs1Builder>();
 builder.Services.AddScoped<INumberSequence, EfNumberSequence>();
+builder.Services.AddScoped<IPrinterService, MockPrinterService>();
 
 var cs = builder.Configuration.GetConnectionString("connString");
 

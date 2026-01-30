@@ -2,8 +2,8 @@
 using Application.Helpers;
 using Data.Db;
 using Data.Entity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using static Application.Exceptions.DomainExceptions;
 
@@ -14,12 +14,18 @@ public sealed class SerialService
     private readonly CodeMagDbContext _db;
     private readonly INumberSequence _seq;
     private readonly Gs1Builder _gs1;
+    private readonly IPrinterService _printer; // ✅ eklendi
 
-    public SerialService(CodeMagDbContext db, INumberSequence seq, Gs1Builder gs1)
+    public SerialService(
+        CodeMagDbContext db,
+        INumberSequence seq,
+        Gs1Builder gs1,
+        IPrinterService printer) // ✅ eklendi
     {
         _db = db;
         _seq = seq;
         _gs1 = gs1;
+        _printer = printer;
     }
 
     public async Task<List<Serial>> GenerateAsync(Guid workOrderId, int count, CancellationToken ct = default)
@@ -80,15 +86,24 @@ public sealed class SerialService
         {
             _db.Serials.AddRange(list);
             await _db.SaveChangesAsync(ct);
+
+            // ✅ PRINT SIMULATION (case entegrasyon maddesi)
+            // DB’ye kaydettikten sonra print et → rollback etkisi olmasın
+            foreach (var s in list)
+                await _printer.PrintAsync(s.Gs1String!, ct);
+
             await tx.CommitAsync(ct);
             return list;
         }
         catch (DbUpdateException ex) when (IsUniqueViolation(ex))
         {
+            // Unique violation olursa print’e hiç gitmeden buraya düşer
             throw new ConflictException("Duplicate serial detected. Try again.");
         }
     }
 
     private static bool IsUniqueViolation(DbUpdateException ex)
         => ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627);
+
+
 }

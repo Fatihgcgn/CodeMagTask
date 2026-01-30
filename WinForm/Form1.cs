@@ -69,5 +69,10 @@ namespace WinForm
             page.Dock = DockStyle.Fill;
             panelContent.Controls.Add(page);
         }
+
+        private void simülasyonToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenChild(new SimulationPage());
+        }
     }
 }

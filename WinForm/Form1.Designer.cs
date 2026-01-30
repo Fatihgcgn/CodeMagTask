@@ -37,6 +37,7 @@
             aggregationToolStripMenuItem = new ToolStripMenuItem();
             panelContent = new Panel();
             labelMerhaba = new Label();
+            simülasyonToolStripMenuItem = new ToolStripMenuItem();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
             menuStrip1.SuspendLayout();
@@ -75,7 +76,7 @@
             // menuStrip1
             // 
             menuStrip1.Dock = DockStyle.Fill;
-            menuStrip1.Items.AddRange(new ToolStripItem[] { customerToolStripMenuItem, workOrdersToolStripMenuItem, logisticUnitsToolStripMenuItem, aggregationToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { customerToolStripMenuItem, workOrdersToolStripMenuItem, logisticUnitsToolStripMenuItem, aggregationToolStripMenuItem, simülasyonToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(1127, 31);
@@ -130,6 +131,13 @@
             labelMerhaba.TabIndex = 0;
             labelMerhaba.Text = "Merhaba Hoş geldiniz !";
             // 
+            // simülasyonToolStripMenuItem
+            // 
+            simülasyonToolStripMenuItem.Name = "simülasyonToolStripMenuItem";
+            simülasyonToolStripMenuItem.Size = new Size(80, 27);
+            simülasyonToolStripMenuItem.Text = "Simülasyon";
+            simülasyonToolStripMenuItem.Click += simülasyonToolStripMenuItem_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -161,5 +169,6 @@
         private ToolStripMenuItem logisticUnitsToolStripMenuItem;
         private Panel panelContent;
         private Label labelMerhaba;
+        private ToolStripMenuItem simülasyonToolStripMenuItem;
     }
 }
