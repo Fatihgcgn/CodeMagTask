@@ -1,17 +1,54 @@
 namespace WinForm
 {
-    internal static class Program
+    using Serilog;
+
+    static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.WithMachineName()
+                .Enrich.WithThreadId()
+                .WriteTo.File(
+                    path: "Logs/winform-log-.txt",
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 14,
+                    shared: true
+                )
+                .CreateLogger();
+
+            // UI thread exception’larý
+            Application.ThreadException += (sender, args) =>
+            {
+                Log.Error(args.Exception, "WINFORMS UI Thread Exception");
+            };
+
+            // Background / unhandled exception’lar
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                if (args.ExceptionObject is Exception ex)
+                    Log.Fatal(ex, "WINFORMS Unhandled Exception");
+            };
+
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            try
+            {
+                Application.Run(new Form1());
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "WINFORMS Application Crash");
+                throw;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }

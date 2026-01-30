@@ -20,6 +20,8 @@ public class CodeMagDbContext : DbContext
 
     public DbSet<PrintJobs> PrintJobs => Set<PrintJobs>();
 
+    public DbSet<ErrorLog> ErrorLogs => Set<ErrorLog>();
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,6 +29,16 @@ public class CodeMagDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CodeMagDbContext).Assembly);
 
         modelBuilder.Entity<NextValueResult>().HasNoKey();
+
+        modelBuilder.Entity<ErrorLog>(b =>
+        {
+            b.ToTable("ErrorLogs");
+            b.Property(x => x.Level).HasMaxLength(20);
+            b.Property(x => x.TraceId).HasMaxLength(100);
+            b.Property(x => x.Method).HasMaxLength(20);
+            b.Property(x => x.RequestPath).HasMaxLength(500);
+        });
+
 
         base.OnModelCreating(modelBuilder);
     }
